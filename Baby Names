@@ -1,0 +1,138 @@
+/*Kevin Knutsen
+CSE 142
+Homework 5 BabyNames
+
+Takes a name that the user inputs, defines the name, and compares its popularity with the 
+1000 most popular names as ranked by the US census.*/
+
+import java.io.*; //So I can scan files.
+import java.util.*; //So I can create a scanner.
+import java.awt.*; //So I can draw.
+
+public class BabyNames {
+	public static final int STARTING_YEAR = 1890;
+	public static final int WIDTH = 60;
+	public static final int HEIGHT = 30;
+	
+	public static void main(String[] args) throws FileNotFoundException { 
+      printIntro();     
+      File nameList = new File("names.txt");
+      File meanings = new File("meanings.txt");
+      String searchName = userInput();
+      String name = dataSearch(searchName, nameList);
+      String meaning = dataSearch(searchName, meanings);
+      boolean nameFound = printData(name, meaning, searchName);
+		drawBarGraph(nameFound, meaning, name);
+	}
+	
+	//Gives the user information on how to use the program.
+	public static void printIntro() {
+		System.out.println("This program allows you to search through the");
+      System.out.println("data from the Social Security Administration");
+      System.out.println("to see how popular a particular name has been");
+      System.out.println("since " + STARTING_YEAR + ".");
+      System.out.println();
+		System.out.print("Name: ");
+	}
+	
+	//Creates a Scanner that allows the user to input a chosen name.
+	public static String userInput() {
+		Scanner console = new Scanner(System.in);
+      String query = console.next();
+      return query;
+	}
+		
+	//Scans through a file and compares users input to data in file.
+   public static String dataSearch(String query, File data) throws FileNotFoundException {
+      query = query.toLowerCase();
+		Scanner input = new Scanner(data);
+		while (input.hasNextLine()) {
+      	String line = input.nextLine();
+         String lineLC = line.toLowerCase();
+         Scanner lineScan = new Scanner(line);
+         String actualName = lineScan.next();
+         if (lineLC.contains(query) && lineLC.startsWith(query) && actualName.length() == query.length()) {
+         	return line;
+         }
+		}
+     	return "";
+	}
+   
+	//Determines if name the user inputs is in the files that were searched.
+	//If so, it then prints out the name and data.
+   public static Boolean printData(String name, String meaning, String query) {
+   	if (name.length() > 0) {
+      	System.out.println(name);
+         System.out.println(meaning);
+			return true;
+		} 
+      else {
+			System.out.println("\"" + query + "\" " + "not found.");
+		}
+		return false;
+	}
+		
+	//Draws the bar graph.
+	public static void drawBarGraph(Boolean nameFound, String meaning, String name) {
+		if	(nameFound == true) {
+			DrawingPanel barGraph = new DrawingPanel(780, 500 + (HEIGHT * 2) );
+         Graphics g = barGraph.getGraphics();
+         g.setColor(Color.LIGHT_GRAY);
+         g.fillRect(0, 0, 780, HEIGHT);
+         g.fillRect(0, 500 + HEIGHT, 780, HEIGHT);
+        	g.setColor(Color.BLACK);
+         g.drawLine(0, HEIGHT, 780, HEIGHT);
+         g.drawLine(0, 500 + HEIGHT, 780, 500 + HEIGHT);
+         g.drawString(meaning, 0, 16);
+			drawBars(barGraph, name);
+			enumerateBars(barGraph, name);
+		}
+	}		
+		
+	//Draws the bars per data gathered about the user inputed name.
+	public static void drawBars(DrawingPanel barGraph, String name) {		
+		Graphics g = barGraph.getGraphics();
+		Scanner graphData = new Scanner(name);
+      int count = 0;
+		while (graphData.hasNext()) {
+			String token = graphData.next();
+			if (count == 1) {
+				if (token.equals("f")) {
+					g.setColor(Color.PINK);
+				} else {
+					g.setColor(Color.BLUE);
+            }
+			}
+			int counter = 1;        
+         while (graphData.hasNextInt()) {    		
+				int rank = graphData.nextInt();
+            if (rank != 0) {
+					g.fillRect(((counter - 1) * WIDTH) , (rank / 2) + HEIGHT , WIDTH / 2, 500 - rank / 2);
+				}
+			counter++;	
+			}                  
+      count++;
+		}
+	}
+	
+	//Writes the rank and years on the bar graph.
+	public static void enumerateBars(DrawingPanel barGraph, String name) {
+		Graphics g = barGraph.getGraphics();
+		g.setColor(Color.BLACK);
+		Scanner graphData = new Scanner(name);
+		while (graphData.hasNext()) {
+			String token = graphData.next();
+			int counter = 0;        
+         while (graphData.hasNextInt()) {
+				g.drawString("" + (STARTING_YEAR + (counter * 10)), counter * WIDTH, ((HEIGHT - 20) * 2 + 532));
+         	int rank = graphData.nextInt();
+            if (rank != 0) {
+					g.drawString("" + rank,((counter ) * WIDTH) , (rank / 2) + HEIGHT);
+				} else {
+					g.drawString("" + rank, ((counter) * WIDTH), 500 + HEIGHT);		 	
+				}
+			counter++;
+			}
+		}
+	}   
+}
