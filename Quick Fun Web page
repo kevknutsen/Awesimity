@@ -1,0 +1,18 @@
+<!Quick website with two pictures and two links celebrating 
+  the 'zenness' of pugs>
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Table Time</title>
+	</head>
+	<body style="background-color:black">
+		<h1 style="font-family: Arial; text-align: center; color:red">Pugs Are An Open Door</h1>
+		<a href="http://www.huna.org/html/onehand.html">
+		    <img src= "http://rlv.zcache.ca/pug_poster-rb98ae50351f9469a8eeea128aab7cddf_w2q_8byvr_324.jpg">
+		</a>
+		
+		<a href="http://en.wikipedia.org/wiki/Nirvana_(Buddhism)"> 
+		    <img src="https://lh6.ggpht.com/9jc6lo1nevLyELAvg-Xx7PYjSgitbS-41hdSqUoR7JxBs8m6zzpF663SZCz7t5vuqQ=w170">
+		</a>
+	</body>
+</html>
