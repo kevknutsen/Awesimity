@@ -1,0 +1,174 @@
+/*
+Kevin Knutsen
+CSE 143 AB
+
+
+This program creates an object called AssassinManager that allows
+the user to interact with AssassinMain to play a game of Assassin.
+Specifically AssassinManager keeps two lists. One list,the killring
+keeps track of who is alive and who their target is. The other list,
+the graveyard, keeps track of who is dead and who killed them.
+AssassinMain uses the data in these lists and other methods within
+AssassinManager to conduct the game.
+*/
+import java.util.*; //So I can use the ArrayList
+
+public class AssassinManager {
+   private AssassinNode graveyard;
+   private AssassinNode killRing;
+   
+   // Constructs an AssassinManager that creates two lists: the killRing and the graveyard.
+   // List of names passed in must not be null and must be greater than zero.
+   public AssassinManager(ArrayList<String> names) {
+      if (names == null || names.size() == 0) {
+         throw new IllegalArgumentException("List is null or it is empty.");
+      } else {
+         int size = names.size();
+         for (int i = 0; i < size; i++) {
+            if (killRing == null) {
+               killRing = new AssassinNode(names.get(i));
+            } else {
+               AssassinNode current = killRing;
+               while (current.next != null) {
+                  current = current.next;
+               }
+               current.next = new AssassinNode(names.get(i));
+            }
+         }
+         graveyard = null;
+      }
+   }
+   
+   // Prints out the current state of the killRing.
+   public void printKillRing() {
+      AssassinNode current = killRing;
+      while (current.next != null) {
+         System.out.println("  " + current.name + " is stalking " + current.next.name);
+         current = current.next;
+         if (current.next == null) {
+            System.out.println("  " + current.name + " is stalking " + killRing.name);
+         }
+      }
+   }
+   
+   // Prints out the current state of the graveyard.
+   public void printGraveyard() {
+      AssassinNode current = graveyard;
+      if (graveyard == null) {
+         System.out.print("");
+      } else {
+         while (current != null) {
+            System.out.println("  " + current.name + " was killed by " + current.killer);
+            current = current.next;
+         }
+      }
+   }
+   
+   // Checks the killRing to see if the string passed in is present
+   // and returns true or false.
+   public boolean killRingContains(String name) {
+      AssassinNode current = killRing;
+      return contains(current, name);
+   }
+   
+   // Checks the graveyard to see if the name passed in is present
+   // and returns true or false.
+   public boolean graveyardContains(String name) {
+      AssassinNode current = graveyard;
+      return contains(current, name);
+   }
+   
+   // Tests whether the game is over and returns true or false.
+   public boolean isGameOver() {
+      if (killRing.next == null) {
+         return true;
+      } else {
+         return false;
+      }
+   }
+   
+   // Produces the name of the winner once the game is over.
+   // if the game is over it returns the name of the winner,
+   // and if the game is not over returns null.
+   public String winner() {
+      if (isGameOver()) {
+         return killRing.name;
+      } else {
+         return null;
+      }
+   }
+   
+   // Takes string passed in and removes it from killRing list and
+   // adds it to front of graveyard list, while maintaining the
+   // the integrity the lists.
+   // Throws an IllegalStateException if called when game is over.
+   // Throws an IllegalArgumentException if name passed in is not it
+   // the killring. Throws an IllegalArgumentException if name passed in
+   // is in the graveyard.
+   public void kill(String name) {
+      if (isGameOver()) {
+         throw new IllegalStateException("Game is already over");
+      }
+      name = name.toLowerCase();
+      AssassinNode current = killRing;
+      if (killRingContains(name)) {
+         if (killRing.name.toLowerCase().equals(name)) {
+            AssassinNode endList = killRing;
+            while (endList.next != null) {
+               endList = endList.next;
+            }
+            killRing.killer = endList.name;
+            if (graveyard == null) {
+               graveyard = current;
+               killRing = current.next;
+               graveyard.next = null;
+            } else {
+               AssassinNode temp = current;
+               current = current.next;
+               killRing = current;
+               temp.next = graveyard;
+               graveyard = temp;
+            }
+         } else {
+            while (!current.next.name.toLowerCase().equals(name)) {
+               current = current.next;
+            }
+            current.next.killer = current.name;
+            if (graveyard == null) {
+               graveyard = current.next;
+               current.next = current.next.next;
+               graveyard.next = null;
+            } else {
+               AssassinNode temp = current.next;
+               current.next = current.next.next;
+               temp.next = graveyard;
+               graveyard = temp;
+            }
+         }
+      } else if (graveyardContains(name)) {
+         throw new IllegalArgumentException(name + "is already dead.");
+      } else {
+         throw new IllegalArgumentException("Unknown person.");
+      }
+   }
+   
+   // Takes a AssassinNode and string and checks if that string is
+   // present in the list and returns true or false.
+   private boolean contains(AssassinNode current, String name) {
+      if (current == null) {
+         return false;
+      }
+      name = name.toLowerCase();
+      if (current.name.toLowerCase().equals(name)) {
+         return true;
+      } else {
+         while (current.next != null) {
+            current = current.next;
+            if (current.name.toLowerCase().equals(name)) {
+               return true;
+            }
+         }
+      }
+      return false;
+   }
+}
