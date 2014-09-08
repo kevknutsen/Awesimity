@@ -1,0 +1,112 @@
+// Kevin Knutsen
+// CSE 143 AB
+
+// This program creates a queue structure and uses that to analyze html tags.
+// Features include: adding tags, removing tags, printing out the queue of tags,
+// and validating the queue of tags to see whether all opening and closing pairs
+// are matched up correctly.
+
+import java.util.*; // So I can use stacks and queues.
+
+public class HtmlValidator {
+   private Queue<HtmlTag> tags;
+   
+   //Constructs an empty queue.
+   public HtmlValidator() {
+      this.tags = new LinkedList<HtmlTag>();
+   }
+   
+	//Requires a client passed in queue of html tags. Creates a new queue with identical
+	//tags. If the passed queue is null an IllegalArgumentException is thrown.
+   public HtmlValidator(Queue<HtmlTag> tags) {
+      if (tags == null) {
+         throw new IllegalArgumentException("Queue is null.");
+      } else { this.tags = new LinkedList<HtmlTag>(tags);
+      }
+   }
+   
+	//Requires an html tag passed in. That tag is added to the end of the queue. 
+	//If the tag passed is null an IllegalArgumentException is thrown.
+   public void addTag(HtmlTag tag) {
+      if (tag == null) {
+         throw new IllegalArgumentException("tag is null.");
+      } else { tags.add(tag);
+      }
+   }
+   
+	//Returns all the tags that are currently in the queue.
+   public Queue<HtmlTag> getTags() {
+      return tags;
+   }
+   
+	// Requires a string to be passed in. If the string passed in is null
+	// an IllegalArgumentException is thrown. All tag elements in the que
+	// that match the passed in string are removed from the que. If none of
+	//	the elements match the string or if the queue is empty then
+	// the que is left unaltered.
+   public void removeAll(String element) {
+      if (element == null) {
+         throw new IllegalArgumentException("String is null.");
+      }
+      int size = tags.size();
+      for (int i = 0; i < size; i++) {
+         HtmlTag test = tags.remove();
+         if (!element.equals(test.getElement())) {
+            tags.add(test);
+         }
+      }
+   }
+   
+	// Prints out all code, stored as elements of the queue,
+	// line by line and explicitly points out which opening tags
+	// and closing tags are not properly paired. Uses changes in indentation
+	// to facilitate easier viewing of a tags range.
+   public void validate() {
+      Stack<HtmlTag> temp = new Stack<HtmlTag>();
+      int size = tags.size();
+      int count = 0;
+      for (int i = 0; i < size; i++) {
+         HtmlTag front = tags.remove();
+         // Identifies cases relating to opening and self closing tags.
+			if (front.isOpenTag() && !front.isSelfClosing()) {
+            temp.push(front);
+            tags.add(front);
+            validatePrint(count, front);
+            count++;
+         } else if (front.isSelfClosing() && !front.isOpenTag()) {
+            tags.add(front);
+            System.out.println("ERROR unexpected tag: " + front.toString());
+         } else if (front.isSelfClosing()) {
+            tags.add(front);
+            validatePrint(count, front);
+         // Identifies cases relating to closing tags.
+			} else if (!front.isOpenTag()) {
+            if (!temp.isEmpty() && front.matches(temp.peek())) {
+               temp.pop();
+               count--;
+               tags.add(front);
+               validatePrint(count, front);
+            } else { tags.add(front);
+               System.out.println("ERROR unexpected tag: " + front.toString());
+            }
+         // All other cases.
+			} else { tags.add(front);
+            validatePrint(count, front);
+         }
+      }
+      // Displays all unclosed tags.
+		while (!temp.isEmpty()) {
+         System.out.println("ERROR unclosed tag: " + temp.pop().toString());
+      }
+   }
+   
+	//Prints the tags at their correct indentation.
+   private void validatePrint(int count, HtmlTag front) {
+      String tab = "";
+      String tag = front.toString();
+      for (int i = 0; i < count; i++) {
+         tab += "    ";
+      }
+      System.out.println(tab += tag);
+   }
+}
