@@ -1,0 +1,74 @@
+// Kevin Knutsen
+// CSE 143 AB
+
+//This testing program stub creates a queue of HTML tags 
+// in a valid sequence.
+// This program test different aspects of the 'remove all' method for the Html Validator.
+import java.util.*;
+
+public class HtmlValidatorTest {
+	public static void main(String[] args) {
+		// <b>Hi</b><br/>
+		//test empty case
+		Queue<HtmlTag> tags = new LinkedList<HtmlTag>();
+	   HtmlValidator validator = new HtmlValidator(tags);
+		System.out.println(tags);
+		System.out.println(validator.getTags());
+		validator.removeAll("");
+		validator.removeAll(" ");
+		System.out.println(validator.getTags());
+		System.out.println("The program didn't crash and the queues have been left unaltered. Pass.");
+		System.out.println();
+		
+		// tests simple case where two elements are same, but opening/closing
+		// status is different.
+		tags.add(new HtmlTag("b", true));      // <b>
+		tags.add(new HtmlTag("b", false));     // </b>
+		tags.add(new HtmlTag("br"));           // <br/>
+		
+		validator = new HtmlValidator(tags);
+		System.out.println(tags);
+		System.out.println(validator.getTags());
+		validator.removeAll("b");
+		System.out.println(tags);
+		System.out.println(validator.getTags());
+		System.out.println("Since the validator queue has removed all tags, and the tags queue is");
+		System.out.println("still full, that means we are removing all instances of b in the validator");
+		System.out.println("and leaving the original queue alone. Test Passed.");
+		System.out.println();
+		
+	
+		tags.add(new HtmlTag("/br"));
+		tags.add(new HtmlTag("p", true));
+		tags.add(new HtmlTag("p", false));
+		tags.add(new HtmlTag("b", true));
+		tags.add(new HtmlTag("b", false));
+		tags.add(new HtmlTag("br")); 
+		tags.add(new HtmlTag("felix", true));
+		tags.add(new HtmlTag("p", true));
+		tags.add(new HtmlTag("p", false));
+		tags.add(new HtmlTag("b", false));
+		tags.add(new HtmlTag("br")); 
+		
+		System.out.println(tags);
+		validator = new HtmlValidator(tags);
+		System.out.println(validator.getTags());
+		validator.removeAll("p");
+		validator.removeAll("b");
+		validator.removeAll("br");
+		System.out.println("The only things that should be left in the validator queue are");
+		System.out.println("/br and felix");
+		System.out.println();
+		System.out.println(tags);
+		System.out.println(validator.getTags());
+		System.out.println("Test passed.");
+		
+		// Test null string exception	
+		//validator.removeAll(null);	
+		
+		//tests null queue exception
+		//tags = null;
+		//validator = new HtmlValidator(tags);
+	
+	}
+}
