@@ -1,0 +1,131 @@
+/*
+Kevin Knutsen
+CSE 142
+
+
+This program takes a file containing a DNA sequence and creates a file displaying the name of the sequence, the nucleotides,
+the quantity of each nucleotide, the mass as a percentage of the whole sequence, the individual codons, and it determines if the
+sequence is a protein.
+*/
+
+import java.util.*; //So I can use arrays.
+import java.io.*; //So I can access Files and use PrintStream
+
+public class DNA {
+	public static final int NUCLEOTIDES = 4;
+	public static final int NUC_PER_CODON = 3;
+	public static final int MINIMUM_CODON = 5;
+	public static final int PROTEIN_MASS = 30;
+	
+	public static void main(String[] args) throws FileNotFoundException {
+		Scanner console = new Scanner(System.in);
+		System.out.println("This program reports information about DNA");
+		System.out.println("nucleotide sequences that may encode proteins.");
+		System.out.print("Input file name? ");
+		String input = console.next();
+		Scanner dnaScan = new Scanner(new File(input));
+		System.out.print("Output file name? ");
+		String output = console.next();
+		PrintStream proteinFinder = new PrintStream(new File(output));
+		int counter = 0;
+		while (dnaScan.hasNextLine()){
+			String line = dnaScan.nextLine();
+			if (counter % 2 == 0) {
+				proteinFinder.println("Region Name: " + line);
+			}
+			if (counter % 2 != 0) {
+				String formatNucleotide = line.toUpperCase();
+				int[] nucleotideCount = new int[NUCLEOTIDES];
+				nucCounts(formatNucleotide, nucleotideCount);
+				double[] masses = {135.128, 111.103, 151.128, 125.107};
+				double[] massCopy = Arrays.copyOf(masses, NUCLEOTIDES);
+				massOfNucleotides(massCopy, nucleotideCount);
+				int sum = 0;
+				double pureDna = 0;
+				for (int i = 0; i < NUCLEOTIDES; i ++) {
+					sum += nucleotideCount[i];
+				 	pureDna += massCopy[i];
+				}
+				String[] codonList = new String[sum / NUC_PER_CODON];
+				int junkMass = codonSeparator(codonList, formatNucleotide, line);
+				double totalMass = pureDna + junkMass;
+				double[] massPercentage = new double[NUCLEOTIDES];
+				double roundedTotalMass = totalMassPercent(massCopy, massPercentage, totalMass);
+				String protein = proteinValidation(codonList, massPercentage);
+				printToFile(line, formatNucleotide, nucleotideCount, massPercentage, 
+					roundedTotalMass, codonList, protein, proteinFinder);
+			}
+			counter++;
+		}	
+	}
+	
+	//Calculates the total mass percentage of each nucleotide.
+	public static double totalMassPercent(double[] massCopy, double[] massPercentage, double totalMass) {
+		for (int k = 0; k < NUCLEOTIDES; k++){
+				massCopy[k] /= (totalMass);
+				massCopy[k] *= 100;
+				massPercentage[k] = Math.round(massCopy[k] * 10.0) / 10.0;
+				}	
+		double roundedTotalMass = Math.round(totalMass * 10) / 10.0;
+		return roundedTotalMass;
+	} 
+	
+	//Computes the mass of each nucleotide in the sequence.
+	public static void massOfNucleotides(double[] massCopy, int[] nucleotideCount) {
+		for (int q = 0; q < massCopy.length; q++){
+			massCopy[q] *= nucleotideCount[q];
+		}	
+	}
+		
+	//Separates the nucleotide into codons and computes mass of junk dna.
+	public static int codonSeparator(String[] codonList, String formatNucleotide, String line){
+		Scanner codonFinder = new Scanner(formatNucleotide);
+		String codon = codonFinder.next();
+		String pureDna = codon.replace("-" , "");
+		for (int j = 0; j < codonList.length; j++) {
+			codonList[j] = pureDna.substring(j * NUC_PER_CODON, (j * NUC_PER_CODON) + NUC_PER_CODON);
+		}
+		int junkMass = line.length() - pureDna.length();
+		junkMass *= 100;
+		return junkMass;
+	}
+		
+	//Counts the number of nucleotides of each type (AGCT)
+	public static void nucCounts(String formatNucleotide, int[] nucleotideCount){
+		for (int i = 0; i < formatNucleotide.length(); i++) {
+			int index = "ACGT".indexOf(formatNucleotide.charAt(i));
+			if (index >= 0) {
+				nucleotideCount[index]++;
+			}
+		}
+	}
+		
+	//Checks if sequence of dna is a protein.
+	public static String proteinValidation(String[] codonList, double[] awesome){
+		String protein = "NO";
+		double proteinMass = awesome[1] + awesome[2];
+		if (proteinMass >= PROTEIN_MASS && codonList.length >= MINIMUM_CODON) {
+			if (codonList[0].equals("ATG")) {
+				if (codonList[codonList.length -1].equals("TGA") || 
+						codonList[codonList.length - 1].equals("TAA") ||
+					 		codonList[codonList.length - 1].equals("TAG")) {
+				protein = "YES";
+				}	
+			}
+		}
+		return protein;
+	}
+		
+	//Prints the data to a file.
+	public static void printToFile(String line, String formatNucleotide, int[] nucleotideCount, 
+		double[] awesome, double roundedTotalMass, String[] codonList, 
+		String protein, PrintStream proteinFinder ) {  
+		proteinFinder.println("Nucleotides: " + formatNucleotide);
+		proteinFinder.println("Nuc. Counts: " + Arrays.toString(nucleotideCount));
+		proteinFinder.println("Total Mass%: " + Arrays.toString(awesome) + " of " + roundedTotalMass );
+		proteinFinder.println("Codons List: " + Arrays.toString(codonList));
+		proteinFinder.println("Is Protein?: " + protein);
+		proteinFinder.println();
+	}
+			
+}
